@@ -50,7 +50,6 @@ nw_carretera.line <-
   nw_carretera %>% 
   convert(to_linegraph)
 
-nw_carretera
 
 nw_carretera.line <-
 nw_carretera.line %>% 
@@ -58,54 +57,3 @@ nw_carretera.line %>%
   left_join(y = get.data.frame(nw_carretera), 
             by = c(".tidygraph_edge_index" = "e_idx"))
 
-nw_carretera.line %>% 
-  filter(is.na(NOMBRE))
-
-nw_carretera %>% 
-  activate("nodes") %>% 
-  select(n_idx)
-
-
-
-prueba <-
-  nw_carretera %>% 
-  activate("edges") %>% 
-  slice(1:100) %>% 
-  activate("nodes") %>% 
-  mutate(grado_prueba = centrality_degree()) %>% 
-  filter(grado_prueba!=0)
-
-
-prueba <-
-prueba %>% 
-  activate("edges") %>% 
-  mutate(idx = 1:ecount(prueba))
-
-line_prueba <-
-prueba %>% 
-  convert(to_linegraph) %>% 
-  activate("nodes") %>% 
-  left_join(y = get.data.frame(prueba), by = c(".tidygraph_edge_index" = "idx"))
-
-
-# prueba %>% 
-#   select(from, to, NOMBRE, idx)
-# 
-# line_prueba %>% 
-#   select(from, to, NOMBRE, .tidygraph_edge_index)
-# 
-# prueba <- 
-# random.graph.game(10, p.or.m = 0.5, type = "gnp", directed = F) %>% 
-#   as_tbl_graph() %>% 
-#   mutate(name = LETTERS[1:10]) %>% 
-#   mutate(node_idx = 1:vcount(.)) %>% 
-#   activate("edges") %>% 
-#   mutate(edge_idx = 1:ecount(.))
-# 
-# prueba.line <-
-#   prueba %>% 
-#   convert(to_linegraph)
-# 
-# plot(prueba)
-# plot(prueba.line)
-# 
