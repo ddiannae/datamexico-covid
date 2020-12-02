@@ -57,3 +57,19 @@ nw_carretera.line %>%
   left_join(y = get.data.frame(nw_carretera), 
             by = c(".tidygraph_edge_index" = "e_idx"))
 
+nw_carretera.line <-
+  nw_carretera.line %>% 
+  mutate(grado = centrality_degree()) %>%
+  mutate(betweenness_c = centrality_betweenness()
+         ) 
+
+write_graph(graph = nw_carretera.line, file = "results/red_carretera_linegraph.graphml", format = "graphml")
+
+# nw_carretera.line %>% 
+#   as_tibble() %>% 
+#   #group_by(grado) %>% 
+#   #tally()
+#   select(betweenness_c) %>% 
+#   ggplot(mapping = aes(x=betweenness_c)) + 
+#   geom_density()
+#   
