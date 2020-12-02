@@ -48,27 +48,5 @@ road_mun_dict <-
   left_join(y = select(mun_shp, CVEGEO, NOM_ENT, NOM_MUN, counter_mun)) %>% 
   select(-geometry) 
 
-
-# prueba <-
-# rnc_shapes %>% 
-#   filter(TIPO_VIAL=="Carretera") %>% 
-#   head(50) %>% 
-#   mutate(counter_road = 1:nrow(.))
-
-
-#prueba2 <- st_intersects(x = st_transform(x = prueba, crs=st_crs(mun_shp)), y=mun_shp)
-# prueba2 %>% 
-#   as.data.frame() %>% 
-#   rename(counter = row.id) %>% 
-#   as_tibble()
-
-
-prueba
-prueba2 %>% str
-
-mun_shp$CVEGEO[unlist(prueba2)]
-
-st_crs(prueba)
-st_crs(mun_shp)
-
-st_transform(x = prueba, crs=st_crs(mun_shp))
+road_mun_dict %>% 
+  vroom::vroom_write(path = "results/dict_carreteras_municipios.txt")
