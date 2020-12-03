@@ -1,3 +1,14 @@
 data/* filter=lfs diff=lfs merge=lfs -text
 results/* filter=lfs diff=lfs merge=lfs -text
 data/factores_covid_municipio.tsv filter=lfs diff=lfs merge=lfs -text
+data/base_shp.prj filter=lfs diff=lfs merge=lfs -text
+data/carreteras.zip filter=lfs diff=lfs merge=lfs -text
+data/establecimientos_en_carretera.txt filter=lfs diff=lfs merge=lfs -text
+data/muns_highways.tsv filter=lfs diff=lfs merge=lfs -text
+data/municipios.tsv filter=lfs diff=lfs merge=lfs -text
+data/base_shp.dbf filter=lfs diff=lfs merge=lfs -text
+data/base_shp.shp filter=lfs diff=lfs merge=lfs -text
+data/base_shp.shx filter=lfs diff=lfs merge=lfs -text
+data/casos_absoluto.txt filter=lfs diff=lfs merge=lfs -text
+data/casos_ajustado_poblacion.txt filter=lfs diff=lfs merge=lfs -text
+data/casos_diarios_ajustados.tsv filter=lfs diff=lfs merge=lfs -text
