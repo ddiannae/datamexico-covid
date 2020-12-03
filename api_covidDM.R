@@ -4,18 +4,25 @@ library(lubridate)
 library(jsonlite)
 library(pals)
 
-dm_covidmun <- "https://dev-api.datamexico.org/tesseract/cubes/gobmx_covid_stats_mun/aggregate.jsonrecords"
-meas <- "measures%5B%5D="
-drill <- "drilldowns%5B%5D="
+dm_covidmun <- "https://api.datamexico.org/tesseract/data.jsonrecords?cube=gobmx_covid_stats_mun"
+#"/aggregate.jsonrecords"
+meas <- "measures="
+drill <- "drilldowns="
 
-dds <- c("Reported+Date.Time.Time", "Geography.National+Urban+System.National+Urban+System", 
-         "Geography.Geography.Municipality", "Geography.Geography.State")
+dds <- c("Time", "Municipality", "State")
 mms <- c("Daily+Cases", "Daily+Hospitalized", "Daily+Deaths", "Accum+Cases", "Accum+Deaths")
-my_url <- paste0(dm_covidmun, "?",
-          drill, dds[1], "&", drill, dds[2], "&", drill, dds[3], "&",drill, dds[4], "&",
-          meas, mms[1], "&", meas, mms[2], "&", meas, mms[3], "&", meas, mms[4], "&", meas, mms[5], 
-          "&parents=false&sparse=false")
-
+my_url <- paste0(dm_covidmun, "&",
+          drill, dds[1], "%2C", dds[2], "%2C", dds[3], "&",
+          meas, mms[1], "%2C", mms[2], "%2C", mms[3], "%2C",mms[4], "%2C",mms[5], "&parents=false&sparse=false")
+          
+    #dds[2], "&", drill, dds[3], "&",drill, dds[4], "&",
+     
+          
+  #"&", meas, mms[3], "&", meas, mms[4], "&", meas, mms[5], 
+   #      ")
+#https://api.datamexico.org/tesseract/data.jsonrecords?cube=gobmx_covid_stats_mun&drilldowns=Time%2CMunicipality&measures=Daily+Cases%2CDaily+Hospitalized
+#https://api.datamexico.org/tesseract/data.jsonrecords?cube=gobmx_covid_stats_mun&drilldowns=Day%2CMunicipality&measures=Daily+Cases%2CDaily+Deaths%2CDaily+Hospitalized&parents=false&sparse=false
+#https://api.datamexico.org/tesseract/data.jsonrecords?cube=gobmx_covid_stats_mun&drilldowns=Time%2CMunicipalitymeasures=Daily+Cases%2Cmeasures=Daily+Hospitalized
 xxx <- jsonlite::fromJSON(txt = my_url)
 xxx$data <- xxx$data %>% 
   janitor::clean_names() %>% 
@@ -42,27 +49,30 @@ xxx$data %>%
 
 ### Obtención de factores por municipio
   ## Número máximo de casos
+  ### 2,334
   xxx$data %>% 
     group_by(municipality_id) %>% 
     slice(which.max(daily_cases)) %>%
     select(municipality_id, daily_cases) %>% rename("max_cases" = daily_cases) %>%
-inner_join(
+left_join(
   ## Número máximo de hospitalizaciones
+  ### 2,334
   xxx$data %>% 
     group_by(municipality_id) %>% 
     slice(which.max(daily_hospitalized)) %>% 
     select(municipality_id, daily_hospitalized) %>% rename("max_hospitalized" = daily_hospitalized),
   by = "municipality_id"
 ) %>% 
-inner_join(
+left_join(
   ## Número máximo de muertes
+  ### 2,334
   xxx$data %>% 
     group_by(municipality_id) %>% 
     slice(which.max(daily_deaths)) %>% 
     select(municipality_id, daily_deaths) %>% rename("max_deaths" = daily_deaths),
   by = "municipality_id"
 ) %>%
-inner_join(
+left_join(
   ## Fecha de primer caso
   xxx$data %>% 
     filter(daily_cases > 0) %>%
@@ -71,7 +81,7 @@ inner_join(
     select(municipality_id, day) %>% rename("day_first_case" = day),
   by = "municipality_id"
 ) %>%
-inner_join(
+left_join(
   ## Fecha de primera muerte
   xxx$data %>% 
     filter(daily_deaths > 0) %>%
@@ -80,7 +90,7 @@ inner_join(
     select(municipality_id, day) %>% rename("day_first_death" = day),
   by = "municipality_id"
 ) %>%
-inner_join(
+left_join(
   ## Fecha de primeros 50 casos
   xxx$data %>% filter(accum_cases > 50) %>%
     group_by(municipality_id) %>%
@@ -88,14 +98,14 @@ inner_join(
     select(municipality_id, day) %>% rename("day_50_cases" = day),
   by = "municipality_id"
 ) %>%
-inner_join(
+left_join(
   ## Fecha de primeras 10 muertes
   xxx$data %>% filter(accum_deaths > 10) %>%
     group_by(municipality_id) %>%
     slice(which.min(day)) %>%
     select(municipality_id, day) %>% rename("day_10_deaths" = day),
   by = "municipality_id"
-) %>% inner_join(
+) %>% left_join(
   xxx$data %>% 
     janitor::clean_names() %>%
     group_by(municipality_id, municipality) %>% 
@@ -104,3 +114,5 @@ inner_join(
               total_deaths = sum(total_deaths)),
   by = "municipality_id"
 )  %>% select(municipality_id, municipality, everything()) %>% write_tsv("data/factores_covid_municipio.tsv")
+
+  
