@@ -39,10 +39,11 @@ m_carreteros %>% filter(! is.na(days_to_01))
 ## Seleccionamos San Felipe del Progreso, México
 m_no_carreteros <- municipios %>% filter(is_carretero == FALSE)
 ### Seleccionamos Atlixco, Puebla
-m_no_carreteros %>% filter(poblacion_total > 68000 & poblacion_total < 68500)
+m_no_carreteros %>% filter(poblacion_total > 38000 & poblacion_total < 39000) %>% 
+  select(day_first_case, days_to_01, CVEGEO, poblacion_total, nombre, estado)
 
-mun_plots = c(22012, 11004)
-names(mun_plots) <- c("Pedro Escobedo, Querétaro", "Apaseo el Alto, Guanajuato")
+mun_plots = c(13013, 15084)
+names(mun_plots) <- c("Atotonilco de Tula, Hidalgo", "Temascalapa, Estado de México")
 getActiveBetweenDates <- function(start, end, mun) {
   dcs <- xxx$data %>% filter(municipality_id == mun, day >= start, day <= end) %>%
     summarise(cases = sum(daily_cases), deaths = sum(daily_deaths)) %>% unlist(use.names = F)
@@ -64,7 +65,8 @@ for (i in 1:length(mun_plots)) {
     ggtitle(names(mun_plots[i])) +
     ylab("Casos activos") +
     xlab("") +
-    scale_x_date(date_breaks = "months" , date_labels = "%b") +
+    scale_x_date(date_breaks = "months" , date_labels = "%b", limits = c(as.Date("2020-02-28"),
+                                                                         as.Date("2020-12-02"))) +
     theme_minimal() 
   ggsave(paste0("figures/", mun_plots[i], "_casos_activos.png"))
   
