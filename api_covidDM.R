@@ -30,8 +30,7 @@ xxx$data <- xxx$data %>%
 ppp <-  jsonlite::fromJSON(txt = pop_url)
 
 ppp$data <- ppp$data %>%
-  janitor::clean_names() %>% 
-  mutate(pop_100 = population/100000)
+  janitor::clean_names()
 
 ### Gráfica decesos por estados (solo porque sí) 
 xxx$data %>%
@@ -119,7 +118,7 @@ left_join(
 
 ### Casos diarios ajustados a poblacion
 xxx$data <- xxx$data %>% left_join(ppp$data, by = c("municipality_id",  "municipality"))
-xxx$data %>% mutate(daily_cases_adj = daily_cases/pop_100) %>% 
+xxx$data %>% mutate(daily_cases_adj = daily_cases/population) %>% 
   filter(time > "2020-02-28") %>%
-  select(time, municipality_id, municipality, population, pop_100, daily_cases_adj) %>% 
+  select(time, municipality_id, municipality, population, daily_cases_adj) %>% 
   pivot_wider(names_from = "time", values_from="daily_cases_adj") %>% write_tsv("data/casos_diarios_ajustados.tsv")
