@@ -5,29 +5,34 @@ library(jsonlite)
 library(pals)
 
 dm_covidmun <- "https://api.datamexico.org/tesseract/data.jsonrecords?cube=gobmx_covid_stats_mun"
-#"/aggregate.jsonrecords"
+dm_pop <- "https://api.datamexico.org/tesseract/data.jsonrecords?cube=inegi_population"
 meas <- "measures="
 drill <- "drilldowns="
 
 dds <- c("Time", "Municipality", "State")
 mms <- c("Daily+Cases", "Daily+Hospitalized", "Daily+Deaths", "Accum+Cases", "Accum+Deaths")
-my_url <- paste0(dm_covidmun, "&",
+dds_pop <- c("Municipality")
+mms_pop <- c("Population")
+
+covid_url <- paste0(dm_covidmun, "&",
           drill, dds[1], "%2C", dds[2], "%2C", dds[3], "&",
           meas, mms[1], "%2C", mms[2], "%2C", mms[3], "%2C",mms[4], "%2C",mms[5], "&parents=false&sparse=false")
-          
-    #dds[2], "&", drill, dds[3], "&",drill, dds[4], "&",
-     
-          
-  #"&", meas, mms[3], "&", meas, mms[4], "&", meas, mms[5], 
-   #      ")
-#https://api.datamexico.org/tesseract/data.jsonrecords?cube=gobmx_covid_stats_mun&drilldowns=Time%2CMunicipality&measures=Daily+Cases%2CDaily+Hospitalized
-#https://api.datamexico.org/tesseract/data.jsonrecords?cube=gobmx_covid_stats_mun&drilldowns=Day%2CMunicipality&measures=Daily+Cases%2CDaily+Deaths%2CDaily+Hospitalized&parents=false&sparse=false
-#https://api.datamexico.org/tesseract/data.jsonrecords?cube=gobmx_covid_stats_mun&drilldowns=Time%2CMunicipalitymeasures=Daily+Cases%2Cmeasures=Daily+Hospitalized
-xxx <- jsonlite::fromJSON(txt = my_url)
+
+pop_url <- paste0(dm_pop, "&", 
+                  drill, dds_pop[1], "&", 
+                  meas, mms_pop[1], "&parents=false&sparse=false")
+
+xxx <- jsonlite::fromJSON(txt = covid_url)
 xxx$data <- xxx$data %>% 
   janitor::clean_names() %>% 
   mutate(day = as.Date(time)) 
   
+ppp <-  jsonlite::fromJSON(txt = pop_url)
+
+ppp$data <- ppp$data %>%
+  janitor::clean_names() %>% 
+  mutate(pop_100 = population/100000)
+
 ### Gráfica decesos por estados (solo porque sí) 
 xxx$data %>%
   group_by(week = cut(day, "week"), state) %>%
@@ -49,14 +54,12 @@ xxx$data %>%
 
 ### Obtención de factores por municipio
   ## Número máximo de casos
-  ### 2,334
   xxx$data %>% 
     group_by(municipality_id) %>% 
     slice(which.max(daily_cases)) %>%
     select(municipality_id, daily_cases) %>% rename("max_cases" = daily_cases) %>%
 left_join(
   ## Número máximo de hospitalizaciones
-  ### 2,334
   xxx$data %>% 
     group_by(municipality_id) %>% 
     slice(which.max(daily_hospitalized)) %>% 
@@ -65,7 +68,6 @@ left_join(
 ) %>% 
 left_join(
   ## Número máximo de muertes
-  ### 2,334
   xxx$data %>% 
     group_by(municipality_id) %>% 
     slice(which.max(daily_deaths)) %>% 
@@ -115,4 +117,9 @@ left_join(
   by = "municipality_id"
 )  %>% select(municipality_id, municipality, everything()) %>% write_tsv("data/factores_covid_municipio.tsv")
 
-  
+### Casos diarios ajustados a poblacion
+xxx$data <- xxx$data %>% left_join(ppp$data, by = c("municipality_id",  "municipality"))
+xxx$data %>% mutate(daily_cases_adj = daily_cases/pop_100) %>% 
+  filter(time > "2020-02-28") %>%
+  select(time, municipality_id, municipality, population, pop_100, daily_cases_adj) %>% 
+  pivot_wider(names_from = "time", values_from="daily_cases_adj") %>% write_tsv("data/casos_diarios_ajustados.tsv")
