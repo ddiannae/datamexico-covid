@@ -35,13 +35,14 @@ ppp$data <- ppp$data %>%
 
 municipios <- vroom("data/municipios.tsv") 
 m_carreteros <- municipios %>% filter(is_carretero == TRUE)
+m_carreteros %>% filter(! is.na(days_to_01))
 ## Seleccionamos San Felipe del Progreso, México
 m_no_carreteros <- municipios %>% filter(is_carretero == FALSE)
 ### Seleccionamos Atlixco, Puebla
-m_no_carreteros %>% filter(poblacion_total > 134000 & poblacion_total < 135000)
+m_no_carreteros %>% filter(poblacion_total > 68000 & poblacion_total < 68500)
 
-mun_plots = c(15074, 21019)
-names(mun_plots) <- c("San Felipe del Progreso, México", "Atixco, Puebla")
+mun_plots = c(22012, 11004)
+names(mun_plots) <- c("Pedro Escobedo, Querétaro", "Apaseo el Alto, Guanajuato")
 getActiveBetweenDates <- function(start, end, mun) {
   dcs <- xxx$data %>% filter(municipality_id == mun, day >= start, day <= end) %>%
     summarise(cases = sum(daily_cases), deaths = sum(daily_deaths)) %>% unlist(use.names = F)
